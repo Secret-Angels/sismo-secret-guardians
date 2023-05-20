@@ -2,6 +2,7 @@
 
 pragma solidity ^0.8.17;
 
+import "solmate/auth/Owned.sol";
 import "./ISocialRecovery.sol";
 import "sismo-connect-packages/SismoLib.sol";
 
@@ -10,7 +11,11 @@ import "sismo-connect-packages/SismoLib.sol";
 
 abstract contract SocialRecovery is ISocialRecovery, SismoConnect{
 
-    
+    //TODO
+    //modifier threshHold{
+    //    require()
+    //}
+
     bytes16 public groupId;
 
     constructor(bytes16 _appId, bytes16 _groupId) SismoConnect(_appId) {
@@ -32,19 +37,22 @@ abstract contract SocialRecovery is ISocialRecovery, SismoConnect{
 
     function initiateRecovery(bytes proof) external {
 
-        firstSigTimeStamp = block.timestamp;
-        isRecoveryInitiated = true;
+        if(!isRecoveryInitiated){
+            firstSigTimeStamp = block.timestamp;
+            isRecoveryInitiated = true;
+        }
 
-        verify ({ 
-            responseBytes: proof,
-            auth: buildAuth({authType: AuthType.VAULT}),
-            claim: buildClaim({groupId: groupId}),
-            signature: buildSignature({message: abi.encode(msg.sender)})
-        });
+        _verify(proof);
     
         proofTracker.append(proof);
+        
+        // accept only if proof isn't already in the list
+        require(!_proofAlreadyStored(proof), "");
+
+        // require(block.timestamp - firstSigTimeStamp < 2 weeks);
 
     }
+
     // make it only onwer
     function denyRecover() external {
         for (int i ; i < proofTracker.length ; i++) {
@@ -57,21 +65,29 @@ abstract contract SocialRecovery is ISocialRecovery, SismoConnect{
 
         require(isRecoveryInitiated, "not initiated");
         // require(block.timestamp - firstSigTimeStamp < 2 weeks);
+        
+        // accept only if proof isn't already in the list
+        require(!_proofAlreadyStored(proof), "");
+        _verify(proof);
 
+        proofTracker.append(proof);
+    }
+
+    function _proofAlreadyStored(bytes memory proof) private {
+        for(int i; i < proofTracker.length; i++){
+            if(proofTracker[i] == proof){
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    function _verify(bytes proof) private {
         verify ({ 
             responseBytes: proof,
             auth: buildAuth({authType: AuthType.VAULT}),
             claim: buildClaim({groupId: groupId}),
             signature: buildSignature({message: abi.encode(msg.sender)})
         });
-
-        
-
-        proofTracker.append(proof);
-
-
-
     }
-
-    
 }
