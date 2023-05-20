@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 import "sismo-connect-packages/SismoLib.sol";
 import "./GnosisSafe.sol";
+import "./SocialRecovery.sol";
 
 contract SecretGuardiansModule is SismoConnect {
     bytes16 public groupId;
