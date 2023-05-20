@@ -8,7 +8,6 @@ import "./ISocialRecovery.sol";
 abstract contract SocialRecovery is ISocialRecovery{
 
 
-    address owner;
     uint256 private firstSigTimeStamp;
 
     function initiateRecovery(address proposedNewAddress) external {
