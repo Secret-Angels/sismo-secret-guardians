@@ -44,7 +44,7 @@ abstract contract SocialRecovery is ISocialRecovery, SismoConnect{
 
         _verify(proof);
     
-        proofTracker.append(proof);
+        proofTracker.push(proof);
         
         // accept only if proof isn't already in the list
         require(!_proofAlreadyStored(proof), "");
@@ -67,22 +67,22 @@ abstract contract SocialRecovery is ISocialRecovery, SismoConnect{
         // require(block.timestamp - firstSigTimeStamp < 2 weeks);
         
         // accept only if proof isn't already in the list
-        require(!_proofAlreadyStored(proof), "");
+        require(!_proofAlreadyStored(proof), "proof already used");
         _verify(proof);
 
-        proofTracker.append(proof);
+        proofTracker.push(proof);
     }
 
-    function _proofAlreadyStored(bytes memory proof) private {
-        for(int i; i < proofTracker.length; i++){
-            if(proofTracker[i] == proof){
+    function _proofAlreadyStored(bytes memory proof) private view returns (bool) {
+        for(uint i; i < proofTracker.length; i++){
+            if(keccak256(abi.encode(proofTracker[i])) == keccak256(abi.encode(proof))){
                 return true;
             }
         }
         return false;
     }
     
-    function _verify(bytes proof) private {
+    function _verify(bytes memory proof) private {
         verify ({ 
             responseBytes: proof,
             auth: buildAuth({authType: AuthType.VAULT}),
@@ -92,7 +92,7 @@ abstract contract SocialRecovery is ISocialRecovery, SismoConnect{
 
         
 
-        proofTracker.append(proof);
+        proofTracker.push(proof);
 
 
 
