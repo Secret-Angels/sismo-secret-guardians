@@ -22,9 +22,9 @@ abstract contract SocialRecovery is ISocialRecovery, SismoConnect{
         groupId = _groupId;
     }
 
-    bytes[] private proofTracker;
+    bytes[] private _proofTracker;
     bool private isRecoveryInitiated;
-    uint256 private firstSigTimeStamp;
+    uint256 public firstSigTimeStamp;
 
 
     /// TODO : verify if method is useful
@@ -44,7 +44,7 @@ abstract contract SocialRecovery is ISocialRecovery, SismoConnect{
 
         _verify(proof);
     
-        proofTracker.push(proof);
+        _proofTracker.push(proof);
         
         // accept only if proof isn't already in the list
         require(!_proofAlreadyStored(proof), "");
@@ -55,8 +55,8 @@ abstract contract SocialRecovery is ISocialRecovery, SismoConnect{
 
     // make it only onwer
     function denyRecover() external {
-        for (uint256 i ; i < proofTracker.length ; i++) {
-            proofTracker.pop();
+        for (uint256 i ; i < _proofTracker.length ; i++) {
+            _proofTracker.pop();
         }
         isRecoveryInitiated = false;
     }
@@ -70,12 +70,12 @@ abstract contract SocialRecovery is ISocialRecovery, SismoConnect{
         require(!_proofAlreadyStored(proof), "proof already used");
         _verify(proof);
 
-        proofTracker.push(proof);
+        _proofTracker.push(proof);
     }
 
     function _proofAlreadyStored(bytes memory proof) private view returns (bool) {
-        for(uint i; i < proofTracker.length; i++){
-            if(keccak256(abi.encode(proofTracker[i])) == keccak256(abi.encode(proof))){
+        for(uint i; i < _proofTracker.length; i++){
+            if(keccak256(abi.encode(_proofTracker[i])) == keccak256(abi.encode(proof))){
                 return true;
             }
         }
@@ -92,7 +92,7 @@ abstract contract SocialRecovery is ISocialRecovery, SismoConnect{
 
         
 
-        proofTracker.push(proof);
+        _proofTracker.push(proof);
 
 
 
