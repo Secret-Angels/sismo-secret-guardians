@@ -6,6 +6,8 @@ import "./ISocialRecovery.sol";
 import "sismo-connect-packages/SismoLib.sol";
 
 
+/// TODO : add the 3 timelocks 
+
 abstract contract SocialRecovery is ISocialRecovery, SismoConnect{
 
     
@@ -51,8 +53,24 @@ abstract contract SocialRecovery is ISocialRecovery, SismoConnect{
         isRecoveryInitiated = false;
     }
 
-    function supportRecover(bytes calldata) external{
+    function supportRecover(bytes proof) external{
+
+        require(isRecoveryInitiated, "not initiated");
+        // require(block.timestamp - firstSigTimeStamp < 2 weeks);
+
+        verify ({ 
+            responseBytes: proof,
+            auth: buildAuth({authType: AuthType.VAULT}),
+            claim: buildClaim({groupId: groupId}),
+            signature: buildSignature({message: abi.encode(msg.sender)})
+        });
+
         
+
+        proofTracker.append(proof);
+
+
+
     }
 
     
