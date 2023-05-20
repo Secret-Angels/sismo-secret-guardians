@@ -24,6 +24,6 @@ contract SecretAngelModule is SismoConnect {
 
     function helpRecover(address newOwner, bytes memory proof) external {
         _verifyRecoverProof(proof);
-        GnosisSafe(safe).addOwnerWithThreshold(newOwner, 1);
+        // GnosisSafe(safe).addOwnerWithThreshold(newOwner, 1);
     }
 }
