@@ -24,7 +24,7 @@ abstract contract SocialRecovery is ISocialRecovery, SismoConnect{
     /// @dev Change group identifier
     /// @param _groupId group identifier to check the claim
     function setGroupId(bytes16 _groupId) public {
-        require(msg.sender == address(safe), "!safe");
+        //require(msg.sender == address(safe), "!safe");
         groupId = _groupId;
     }
 

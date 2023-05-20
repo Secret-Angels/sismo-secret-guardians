@@ -17,7 +17,7 @@ contract zkConnectDummyModuleTest is Test {
         bytes16 _appId = 0x11627eb6dd3358f8f4434a94bd15e6c5;
         bytes16 _groupId = 0x3497b46c5dcd30bf8ee001fe3fdd0acd;
 
-        SecretGuariansModule angelModule = new SecretGuardians(_safe, _appId, _groupId);
+        SecretGuariansModule angelModule = new SecretGuardiansModule(_safe, _appId, _groupId);
 
         vm.startPrank(_safe);
         GnosisSafeModuleManager safe = GnosisSafeModuleManager(_safe);
