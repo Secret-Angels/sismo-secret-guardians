@@ -6,21 +6,17 @@ import "src/SecretGuardiansModule.sol";
 
 contract zkConnectDummyModuleTest is Test {
     function setUp() public {
-        createSelectFork("https://rpc.ankr.com/eth");
+        vm.createSelectFork("https://goerli.blockpi.network/v1/rpc/public");
     }
 
-    function testExecTxUsingZkConnectProof() public {
-        vm.selectFork(goerliFork);
-        assertEq(vm.activeFork(), goerliFork);
-
+    function testSimpleAttachment() public {
         address _safe = 0xe23B2067877E013434bE22BE0357B176bcC00174;
         bytes16 _appId = 0x11627eb6dd3358f8f4434a94bd15e6c5;
         bytes16 _groupId = 0x3497b46c5dcd30bf8ee001fe3fdd0acd;
 
-        SecretGuariansModule angelModule = new SecretGuardiansModule(_safe, _appId, _groupId);
-
+        SecretAngelModule angelModule = new SecretAngelModule(_safe, _appId, _groupId);
         vm.startPrank(_safe);
-        GnosisSafeModuleManager safe = GnosisSafeModuleManager(_safe);
+        GnosisSafe safe = GnosisSafe(_safe);
 
         safe.enableModule(address(angelModule));
         vm.stopPrank();

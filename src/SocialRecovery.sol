@@ -30,7 +30,7 @@ abstract contract SocialRecovery is ISocialRecovery, SismoConnect{
         groupId = _groupId;
     }
 
-    function initiateRecovery(bytes proof) external {
+    function initiateRecovery(bytes memory proof) external {
 
         firstSigTimeStamp = block.timestamp;
         isRecoveryInitiated = true;
@@ -42,18 +42,18 @@ abstract contract SocialRecovery is ISocialRecovery, SismoConnect{
             signature: buildSignature({message: abi.encode(msg.sender)})
         });
     
-        proofTracker.append(proof);
+        proofTracker.push(proof);
 
     }
     // make it only onwer
     function denyRecover() external {
-        for (int i ; i < proofTracker.length ; i++) {
+        for (uint256 i ; i < proofTracker.length ; i++) {
             proofTracker.pop();
         }
         isRecoveryInitiated = false;
     }
 
-    function supportRecover(bytes proof) external{
+    function supportRecover(bytes memory proof) external{
 
         require(isRecoveryInitiated, "not initiated");
         // require(block.timestamp - firstSigTimeStamp < 2 weeks);
@@ -67,7 +67,7 @@ abstract contract SocialRecovery is ISocialRecovery, SismoConnect{
 
         
 
-        proofTracker.append(proof);
+        proofTracker.push(proof);
 
 
 

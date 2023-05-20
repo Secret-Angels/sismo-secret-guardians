@@ -3,21 +3,13 @@ pragma solidity 0.8.17;
 
 import "sismo-connect-packages/SismoLib.sol";
 import "./GnosisSafe.sol";
-import "./SocialRecovery.sol";
 
-contract SecretGuardiansModule is SismoConnect {
+contract SecretAngelModule is SismoConnect {
     bytes16 public groupId;
     GnosisSafe public safe;
 
     constructor(address _safe, bytes16 _appId, bytes16 _groupId) SismoConnect(_appId) {
         safe = GnosisSafe(_safe);
-        groupId = _groupId;
-    }
-
-    /// @dev Change group identifier
-    /// @param _groupId group identifier to check the claim
-    function setGroupId(bytes16 _groupId) public {
-        require(msg.sender == address(safe), "!safe");
         groupId = _groupId;
     }
 
@@ -28,7 +20,6 @@ contract SecretGuardiansModule is SismoConnect {
             claim: buildClaim({groupId: groupId}),
             signature: buildSignature({message: abi.encode(msg.sender)})
         });
-        
     }
 
     function helpRecover(address newOwner, bytes memory proof) external {
