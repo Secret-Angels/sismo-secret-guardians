@@ -28,6 +28,7 @@ contract SecretGuardiansModule is SismoConnect {
             claim: buildClaim({groupId: groupId}),
             signature: buildSignature({message: abi.encode(msg.sender)})
         });
+        
     }
 
     function helpRecover(address newOwner, bytes memory proof) external {
