@@ -11,18 +11,21 @@ import "sismo-connect-packages/SismoLib.sol";
 abstract contract SocialRecovery is ISocialRecovery, SismoConnect{
 
 
+    bytes16 public groupId;
     uint256 public maxDuration;
     uint256 public minSignerCount;//TODO: constructor
-    bytes16 public groupId;
+    address public newOwner;
 
 
     constructor(
         bytes16 _appId,
         bytes16 _groupId,
-        uint256 _minSignerCount ) SismoConnect(_appId) {
+        uint256 _minSignerCount ,
+        address _newOwner) SismoConnect(_appId) {
 
             groupId = _groupId;
             minSignerCount = _minSignerCount;
+            newOwner = _newOwner;
 
     }
 
@@ -46,7 +49,7 @@ abstract contract SocialRecovery is ISocialRecovery, SismoConnect{
 
     function supportRecovery(bytes memory proof) external {
 
-        require (block.timestamp - firstSigTimeStart <= maxDuration);
+        require (block.timestamp - firstSigTimeStamp <= maxDuration);
 
         if(!isRecoveryInitiated){
             firstSigTimeStamp = block.timestamp;
@@ -65,13 +68,15 @@ abstract contract SocialRecovery is ISocialRecovery, SismoConnect{
     }
 
     // make it only onwer
-    function denyRecover() external {
+    function denyRecovery() external {
         for (uint256 i ; i < _proofTracker.length ; i++) {
             _proofTracker.pop();
         }
         isRecoveryInitiated = false;
     }
 
+    function executeRecovery() external virtual;
+    
 
     function _proofAlreadyStored(bytes memory proof) private view returns (bool) {
         for(uint i; i < _proofTracker.length; i++){

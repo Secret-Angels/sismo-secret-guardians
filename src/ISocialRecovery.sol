@@ -1,13 +1,13 @@
+// SPDX-License-Identifier: Unlicensed
 
 pragma solidity 0.8.17;
 
 interface ISocialRecovery {
 
-    function initiateRecovery(bytes memory proof) external;
     // make it only onwer
-    function denyRecover() external;
+    function denyRecovery() external;
 
-    function supportRecover() external;
+    function supportRecovery(bytes memory proof) external;
 
     function executeRecovery() external;
 
