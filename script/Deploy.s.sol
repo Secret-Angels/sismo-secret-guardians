@@ -15,7 +15,6 @@ contract Deploy is Script {
     }
 
     function run() public {
-        vm.broadcast();
         SecretAngelModule secretAngelMod = new SecretAngelModule(_appId, _groupId, _safe, 1,0 , 4 seconds, 2 weeks);
         vm.stopBroadcast();
     }
