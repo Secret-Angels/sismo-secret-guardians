@@ -1,3 +1,6 @@
+// SPDX Licence Identifier : EPFL
+
+
 pragma solidity ^0.8.17;
 
 import "solmate/auth/Owned.sol";
@@ -20,19 +23,38 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect, Owned {
     uint256 public freezeRecoveryDuration;
     uint256 public inactivityTimestamp;
     uint256 public firstSigTimeStamp;
+    mapping(address => uint256) newOwnerVote;
+    address[] potentialNewOwner;
 
     // EVENTS
 
     event RecoveryDenied(uint256 timestamp);
     event ProofVerifiedAndAdded(uint256 timestamp, bytes proof);
 
-    constructor(bool _isWalletInactive, bytes16 _appId, bytes16 _groupId, uint256 _minSignerCount, uint256 _freezeRecoveryDuration, uint256 _maxDuration) SismoConnect(_appId) Owned(msg.sender) {
-        groupId = _groupId;
-        minSignerCount = _minSignerCount;
-        freezeRecoveryDuration = _freezeRecoveryDuration;
-        maxDuration = _maxDuration;
-        _isWalletInactive = false;
+    
+    /// @param _appId application identifier as given by Sismo
+    /// @param _groupId group identifier as given by Sismo
+    /// @param _minSignerCount minimal number of distinct signatures required for recovery 
+    /// @param _freezeRecoveryDuration timelock offset before which no recovery is possible
+    /// @param _maxDuration after the first signature, maximal time frame during which we require at least _minSignerCount signatures to issue recovery
+
+
+
+    constructor(
+        bytes16 _appId,
+        bytes16 _groupId,
+        uint256 _minSignerCount,
+        uint256 _freezeRecoveryDuration,
+        uint256 _maxDuration) SismoConnect(_appId) Owned(msg.sender) {
+
+            groupId = _groupId;
+            minSignerCount = _minSignerCount;
+            freezeRecoveryDuration = _freezeRecoveryDuration;
+            maxDuration = _maxDuration;
+            _isWalletInactive = false;
+
     }
+
 
 
 
@@ -41,12 +63,21 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect, Owned {
         _;
     }
 
+
+    ///@notice queries proof of activity from safe
+
     function challengeOwner() external {
         isWalletInactive = true;
         inactivityTimestamp = block.timestamp;
     }
 
+    ///@notice deny the inactivity query issued by the guardians. Proves the wallet is active 
     function denyChallenge() external virtual onlyOwner;
+
+
+    ///@notice method called by the guardians to sign recovery issuance
+    ///@param proof proof of guardianhood
+    ///@param newOwner new address chosen by guardians, in which funds will be deposited if recovery succeeds. 
 
     function supportRecovery(bytes memory proof, address newOwner) external {
 
@@ -67,12 +98,26 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect, Owned {
 
         _verify(proof, newOwner);
         
+
         _proofTracker.push(proof);
+        if (newOwnerVote[newOwner] > 0) {
+            newOwnerVote[newOwner]++;
+        } else {
+            potentialNewOwner.push(newOwner);
+            newOwnerVote[newOwner] = 1;
+        }
+
+        
+
         emit ProofVerifiedAndAdded(block.timestamp, proof);
 
         require(!_proofAlreadyStored(proof), "proof already in the list");
     }
 
+
+    /// @notice denies recovery
+    /// TODO : terminate mapping and array
+    
 
     function denyRecovery() external onlyOwner {
         for (uint256 i; i < _proofTracker.length; i++) {
