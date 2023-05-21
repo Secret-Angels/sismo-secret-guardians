@@ -7,14 +7,18 @@ import "./GnosisSafe.sol";
 
 contract SecretAngelModule is SecretAngel {
     
+    uint256 minLockTime;
     GnosisSafe safe;
 
     constructor (
+
         bytes16 _appId,
         bytes16 _groupId,
-        uint256 _minSignerCount ,
+        uint256 _minSignerCount,
+        uint256 _minLockTime,
         address _newOwner,
         GnosisSafe _safe
+
     ) SecretAngel(
         _appId,
         _groupId,
@@ -22,11 +26,12 @@ contract SecretAngelModule is SecretAngel {
         _newOwner) 
         {
             safe = GnosisSafe(_safe);
+            minLockTime = _minLockTime;
         }
     
 
     function executeRecovery() override external threshold {
-        
+        require(block.timestamp - firstSigTimeStamp >= minLockTime);
         require(msg.sender == newOwner, "not allowed");
         GnosisSafe(safe).addOwnerWithThreshold(newOwner, 1);
 

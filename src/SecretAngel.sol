@@ -11,10 +11,12 @@ import "sismo-connect-packages/SismoLib.sol";
 abstract contract SecretAngel is ISecretAngel, SismoConnect{
 
 
+
     bytes16 public groupId;
     uint256 public maxDuration;
-    uint256 public minSignerCount;//TODO: constructor
+    uint256 public minSignerCount; 
     address public newOwner;
+
 
 
     constructor(
@@ -97,6 +99,5 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect{
         });
 
         _proofTracker.push(proof);
-
     }
 }
