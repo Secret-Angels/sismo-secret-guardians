@@ -26,10 +26,11 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect, Owned {
     event RecoveryDenied(uint256 timestamp);
     event ProofVerifiedAndAdded(uint256 timestamp, bytes proof);
 
-    constructor(bool _isWalletInactive, bytes16 _appId, bytes16 _groupId, uint256 _minSignerCount, uint256 _freezeRecoveryDuration) SismoConnect(_appId) Owned(msg.sender) {
+    constructor(bool _isWalletInactive, bytes16 _appId, bytes16 _groupId, uint256 _minSignerCount, uint256 _freezeRecoveryDuration, uint256 _maxDuration) SismoConnect(_appId) Owned(msg.sender) {
         groupId = _groupId;
         minSignerCount = _minSignerCount;
         freezeRecoveryDuration = _freezeRecoveryDuration;
+        maxDuration = _maxDuration;
         _isWalletInactive = false;
     }
 
