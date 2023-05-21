@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+
+
 pragma solidity ^0.8.17;
 
 import "solmate/auth/Owned.sol";
@@ -7,6 +10,8 @@ import "sismo-connect-packages/SismoLib.sol";
 /// TODO : add the 3 timelocks
 
 abstract contract SecretAngel is ISecretAngel, SismoConnect, Owned {
+
+
     bytes16 public groupId;
     uint256 public epoch;
     uint256 public maxDuration;
@@ -20,12 +25,14 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect, Owned {
     event RecoveryDenied(uint256 timestamp);
     event ProofVerifiedAndAdded(uint256 timestamp, bytes proof);
 
-    constructor(bytes16 _appId, bytes16 _groupId, uint256 _minSignerCount, address _newOwner) SismoConnect(_appId) Owned(msg.sender) {
+    constructor(bytes16 _appId, bytes16 _groupId, uint256 _minSignerCount, address _newOwner)
+        SismoConnect(_appId)
+        Owned(msg.sender)
+    {
         groupId = _groupId;
         minSignerCount = _minSignerCount;
         newOwner = _newOwner;
     }
-
 
     modifier threshold() {
         require(_proofTracker.length >= minSignerCount);
@@ -33,7 +40,6 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect, Owned {
     }
 
     function supportRecovery(bytes memory proof) external {
-
         if (block.timestamp - firstSigTimeStamp > maxDuration) {
             epoch += 1;
             return;
@@ -44,10 +50,10 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect, Owned {
         }
 
         _verify(proof);
-        
-        _proofTracker.push(proof);
-        emit ProofVerifiedAndAdded(block.timestamp, proof);
 
+        _proofTracker.push(proof);
+
+        emit ProofVerifiedAndAdded(block.timestamp, proof);
         require(!_proofAlreadyStored(proof), "proof already in the list");
     }
 
@@ -79,6 +85,5 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect, Owned {
             claim: buildClaim({groupId: groupId}),
             signature: buildSignature({message: abi.encodePacked(msg.sender, epoch)})
         });
-
     }
 }
