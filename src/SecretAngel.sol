@@ -117,7 +117,7 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect, Owned {
 
     /// @notice denies recovery
     /// TODO : terminate mapping and array
-    
+
 
     function denyRecovery() external onlyOwner {
         for (uint256 i; i < _proofTracker.length; i++) {
@@ -129,7 +129,12 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect, Owned {
         emit RecoveryDenied(block.timestamp);
     }
 
+    /// @notice execute the recovery of the safe
+
     function executeRecovery() external virtual;
+
+    /// @notice verifies if the proof is already stored
+    
 
     function _proofAlreadyStored(bytes memory proof) private view returns (bool) {
         for (uint256 i; i < _proofTracker.length; i++) {
