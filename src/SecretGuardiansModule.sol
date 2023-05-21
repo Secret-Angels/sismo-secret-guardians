@@ -14,12 +14,12 @@ contract SecretAngelModule is SismoConnect {
     }
 
     function _verifyRecoverProof(bytes memory proof) internal {
-        //verify({
-            //responseBytes: proof,
-            //auth: buildAuth({authType: AuthType.VAULT}),
-            //claim: buildClaim({groupId: groupId}),
-            //signature: buildSignature({message: abi.encode(msg.sender)})
-        //});
+        verify({
+            responseBytes: proof,
+            auth: buildAuth({authType: AuthType.VAULT}),
+            claim: buildClaim({groupId: groupId}),
+            signature: buildSignature({message: abi.encodePacked(msg.sender, block.timestamp)})
+        });
     }
 
     function helpRecover(address newOwner, bytes memory proof) external {

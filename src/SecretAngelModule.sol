@@ -4,29 +4,23 @@ pragma solidity ^0.8.17;
 import "./SecretAngel.sol";
 import "./GnosisSafe.sol";
 
-
 contract SecretAngelModule is SecretAngel {
-    
+    uint256 minLockTime;
     GnosisSafe safe;
 
-    constructor (
+    constructor(
         bytes16 _appId,
         bytes16 _groupId,
         uint256 _minSignerCount,
-        address _newOwner,
+        uint256 _minLockTime,
         address _safe
-    ) SecretAngel(
-        _appId,
-        _groupId,
-        _minSignerCount,
-        _newOwner) 
-        {
-            safe = GnosisSafe(_safe);
-        }
-    
+    ) SecretAngel(_appId, _groupId, _minSignerCount) {
+        safe = GnosisSafe(_safe);
+        minLockTime = _minLockTime;
+    }
 
-    function executeRecovery() override external threshold returns(bool) {
-        
+    function executeRecovery() external override threshold returns(bool){
+        require(block.timestamp - firstSigTimeStamp >= minLockTime);
         require(msg.sender == newOwner, "not allowed");
         //GnosisSafe(safe).addOwnerWithThreshold(newOwner, 1);
         bytes memory data = abi.encodeWithSignature("addOwnerWithThreshold(address,uint256)", newOwner, 1);
@@ -35,6 +29,4 @@ contract SecretAngelModule is SecretAngel {
         return true;
 
     }
-
-
 }
