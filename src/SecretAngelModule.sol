@@ -12,9 +12,9 @@ contract SecretAngelModule is SecretAngel {
     constructor (
         bytes16 _appId,
         bytes16 _groupId,
-        uint256 _minSignerCount ,
+        uint256 _minSignerCount,
         address _newOwner,
-        GnosisSafe _safe
+        address _safe
     ) SecretAngel(
         _appId,
         _groupId,

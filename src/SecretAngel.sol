@@ -49,7 +49,7 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect{
 
     function supportRecovery(bytes memory proof) external {
 
-        require (block.timestamp - firstSigTimeStamp <= maxDuration);
+        //require (block.timestamp - firstSigTimeStamp <= maxDuration, "timeStamp!");
 
         if(!isRecoveryInitiated){
             firstSigTimeStamp = block.timestamp;
@@ -62,9 +62,7 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect{
         
         // accept only if proof isn't already in the list
 
-        require(!_proofAlreadyStored(proof), "");
-
-
+        require(!_proofAlreadyStored(proof), "proof already stored");
     }
 
     // make it only onwer
@@ -89,14 +87,12 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect{
     
 
     function _verify(bytes memory proof) private {
-        verify ({ 
+        /*verify ({ 
             responseBytes: proof,
             auth: buildAuth({authType: AuthType.VAULT}),
             claim: buildClaim({groupId: groupId}),
             signature: buildSignature({message: abi.encode(msg.sender)})
-        });
-
-        _proofTracker.push(proof);
+        });*/
 
     }
 }

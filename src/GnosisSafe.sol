@@ -27,4 +27,9 @@ interface GnosisSafe {
     /// @param _threshold New threshold.
     function addOwnerWithThreshold(address owner, uint256 _threshold) external;
 
+    /**
+     * @notice Returns if `owner` is an owner of the Safe.
+     * @return Boolean if owner is an owner of the Safe.
+     */
+    function isOwner(address owner) external returns (bool);
 }
