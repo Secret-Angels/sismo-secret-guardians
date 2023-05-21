@@ -1,3 +1,6 @@
+// SPDX Licence Identifier : EPFL
+
+
 pragma solidity ^0.8.17;
 
 import "solmate/auth/Owned.sol";
@@ -21,19 +24,36 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect, Owned {
     uint256 public freezeRecoveryDuration;
     uint256 public inactivityTimestamp;
     uint256 public firstSigTimeStamp;
+    mapping(address => uint256) newOwnerVote;
+    address[] potentialNewOwner;
 
     // EVENTS
 
     event RecoveryDenied(uint256 timestamp);
     event ProofVerifiedAndAdded(uint256 timestamp, bytes proof);
 
-    constructor(bytes16 _appId, bytes16 _groupId, uint256 _minSignerCount, uint256 _freezeRecoveryDuration, uint256 _maxDuration) SismoConnect(_appId) {
-        require(_minSignerCount > 0);
-        groupId = _groupId;
-        minSignerCount = _minSignerCount;
-        freezeRecoveryDuration = _freezeRecoveryDuration;
-        maxDuration = _maxDuration;
+    
+    /// @param _appId application identifier as given by Sismo
+    /// @param _groupId group identifier as given by Sismo
+    /// @param _minSignerCount minimal number of distinct signatures required for recovery 
+    /// @param _freezeRecoveryDuration timelock offset before which no recovery is possible
+    /// @param _maxDuration after the first signature, maximal time frame during which we require at least _minSignerCount signatures to issue recovery
+
+
+
+    constructor(
+        bytes16 _appId,
+        bytes16 _groupId,
+        uint256 _minSignerCount,
+        uint256 _freezeRecoveryDuration,
+        uint256 _maxDuration) SismoConnect(_appId) {
+
+            groupId = _groupId;
+            minSignerCount = _minSignerCount;
+            freezeRecoveryDuration = _freezeRecoveryDuration;
+            maxDuration = _maxDuration;
     }
+
 
 
 
@@ -45,12 +65,21 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect, Owned {
         _;
     }
 
+
+    ///@notice queries proof of activity from safe
+
     function challengeOwner() external {
         require(inactivityTimestamp == 0, "already challenged");
         inactivityTimestamp = block.timestamp;
     }
 
+    ///@notice deny the inactivity query issued by the guardians. Proves the wallet is active 
     function denyChallenge() external virtual;
+
+
+    ///@notice method called by the guardians to sign recovery issuance
+    ///@param proof proof of guardianhood
+    ///@param newOwner new address chosen by guardians, in which funds will be deposited if recovery succeeds. 
 
     function supportRecovery(bytes memory proof, address newOwner) external {
 
@@ -70,33 +99,44 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect, Owned {
         }
         console.log("after if");
         _verify(proof, newOwner);
-    
-        
-        // accept only if proof isn't already in the list
-
-        require(!_proofAlreadyStored(proof), "already deployed");
-
+        require(!_proofAlreadyStored(proof), "proof already in the list");
         _proofTracker.push(proof);
+        if (newOwnerVote[newOwner] > 0) {
+            newOwnerVote[newOwner]++;
+        } else {
+            potentialNewOwner.push(newOwner);
+            newOwnerVote[newOwner] = 1;
+        }
+
+        emit ProofVerifiedAndAdded(block.timestamp, proof);
     }
+
+
+    /// @notice denies recovery
+    /// TODO : terminate mapping and array
 
 
     function denyRecovery() external onlyOwner {
         for (uint256 i; i < _proofTracker.length; i++) {
             _proofTracker.pop();
         }
+        for()
 
         isRecoveryInitiated = false;
         epoch += 1;
         emit RecoveryDenied(block.timestamp);
     }
 
-    function executeRecovery(address newOwner) external virtual returns(bool);
+    /// @notice execute the recovery of the safe
+
+    function executeRecovery() external virtual;
+
+    /// @notice verifies if the proof is already stored
     
 
-    function _proofAlreadyStored(bytes memory proof) private returns (bool) {
-        for(uint i; i < _proofTracker.length; i++){
-            console.log("proofs are equal");
-            if(keccak256(abi.encode(_proofTracker[i])) == keccak256(abi.encode(proof))){
+    function _proofAlreadyStored(bytes memory proof) private view returns (bool) {
+        for (uint256 i; i < _proofTracker.length; i++) {
+            if (keccak256(abi.encode(_proofTracker[i])) == keccak256(abi.encode(proof))) {
                 return true;
             }
         }
