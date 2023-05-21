@@ -11,10 +11,7 @@ import "sismo-connect-packages/SismoLib.sol";
 
 abstract contract SocialRecovery is ISocialRecovery, SismoConnect{
 
-    //TODO
-    //modifier threshHold{
-    //    require()
-    //}
+    uint256 public MINIMUM_SIGNER_COUNT;//TODO: constructor
 
     bytes16 public groupId;
 
@@ -23,9 +20,13 @@ abstract contract SocialRecovery is ISocialRecovery, SismoConnect{
     }
 
     bytes[] private _proofTracker;
-    bool private isRecoveryInitiated;
+    bool public isRecoveryInitiated;
     uint256 public firstSigTimeStamp;
-
+    
+    modifier threshHold{
+        require(_proofTracker.length >= MINIMUM_SIGNER_COUNT);
+        _;
+    }
 
     /// TODO : verify if method is useful
     /// @dev Change group identifier
