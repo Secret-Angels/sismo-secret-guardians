@@ -43,9 +43,4 @@ contract zkConnectDummyModuleTest is Test {
         assertTrue(safe.isOwner(newOwner));
     }
 
-    function testproofs() public {
-        address _safe = 0xe23B2067877E013434bE22BE0357B176bcC00174;
-        bytes16 _appId = 0x233d8ed9e8c2c89ccc3bccdece915115;
-        bytes16 _groupId = 0x3497b46c5dcd30bf8ee001fe3fdd0acd;
-    }
 }
