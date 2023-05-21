@@ -1,11 +1,11 @@
 // SPDX Licence Identifier : EPFL
 pragma solidity ^0.8.17;
 
-import "./SocialRecovery.sol";
+import "./SecretAngel.sol";
 import "./GnosisSafe.sol";
 
 
-contract SocialRecoveryModule is SocialRecovery {
+contract SecretAngelModule is SecretAngel {
     
     GnosisSafe safe;
 
@@ -15,7 +15,7 @@ contract SocialRecoveryModule is SocialRecovery {
         uint256 _minSignerCount ,
         address _newOwner,
         GnosisSafe _safe
-    ) SocialRecovery(
+    ) SecretAngel(
         _appId,
         _groupId,
         _minSignerCount,

@@ -2,13 +2,13 @@
 pragma solidity ^0.8.17;
 
 import "solmate/auth/Owned.sol";
-import "./ISocialRecovery.sol";
+import "./ISecretAngel.sol";
 import "sismo-connect-packages/SismoLib.sol";
 
 
 /// TODO : add the 3 timelocks 
 
-abstract contract SocialRecovery is ISocialRecovery, SismoConnect{
+abstract contract SecretAngel is ISecretAngel, SismoConnect{
 
 
     bytes16 public groupId;

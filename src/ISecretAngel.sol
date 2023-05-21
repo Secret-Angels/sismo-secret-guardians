@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.17;
 
-interface ISocialRecovery {
+interface ISecretAngel {
 
     // make it only onwer
     function denyRecovery() external;
