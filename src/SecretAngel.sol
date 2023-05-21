@@ -21,6 +21,8 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect, Owned {
     uint256 public inactivityTimestamp;
     uint256 public firstSigTimeStamp;
 
+    // EVENTS
+
     event RecoveryDenied(uint256 timestamp);
     event ProofVerifiedAndAdded(uint256 timestamp, bytes proof);
 
@@ -30,6 +32,7 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect, Owned {
         freezeRecoveryDuration = _freezeRecoveryDuration;
         _isWalletInactive = false;
     }
+
 
 
     modifier threshold() {
