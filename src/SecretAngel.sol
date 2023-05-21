@@ -17,15 +17,25 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect, Owned {
 
     bytes[] private _proofTracker;
     bool public isRecoveryInitiated;
+    bool public isWalletInactive;
+
+    uint256 public freezeRecoveryDuration;
+    uint256 public inactivityTimestamp;
     uint256 public firstSigTimeStamp;
+
+    // EVENTS
 
     event RecoveryDenied(uint256 timestamp);
     event ProofVerifiedAndAdded(uint256 timestamp, bytes proof);
 
-    constructor(bytes16 _appId, bytes16 _groupId, uint256 _minSignerCount) SismoConnect(_appId) Owned(msg.sender) {
+    constructor(bool _isWalletInactive, bytes16 _appId, bytes16 _groupId, uint256 _minSignerCount, uint256 _freezeRecoveryDuration, uint256 _maxDuration) SismoConnect(_appId) Owned(msg.sender) {
         groupId = _groupId;
         minSignerCount = _minSignerCount;
+        freezeRecoveryDuration = _freezeRecoveryDuration;
+        maxDuration = _maxDuration;
+        _isWalletInactive = false;
     }
+
 
 
     modifier threshold() {
@@ -36,6 +46,12 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect, Owned {
         _;
     }
 
+    function challengeOwner() external {
+        isWalletInactive = true;
+        inactivityTimestamp = block.timestamp;
+    }
+
+    function denyChallenge() external virtual onlyOwner;
 
     function supportRecovery(bytes memory proof, address newOwner) external {
 
@@ -43,6 +59,12 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect, Owned {
             epoch += 1;
             return;
         }
+
+        if (block.timestamp - inactivityTimestamp <= freezeRecoveryDuration) {
+            epoch += 1;
+            return;
+        }
+
         if (!isRecoveryInitiated) {
             firstSigTimeStamp = block.timestamp;
             isRecoveryInitiated = true;
@@ -90,6 +112,6 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect, Owned {
             signature: buildSignature({message: abi.encode(msg.sender, epoch, newOwner)})
         });
     }
-    
+
 }
 
