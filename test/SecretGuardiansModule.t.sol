@@ -13,17 +13,17 @@ contract zkConnectDummyModuleTest is Test {
 
     function setUp() public {
         //vm.createSelectFork("https://goerli.blockpi.network/v1/rpc/public");
-        //vm.createSelectFork("https://rpc.ankr.com/eth_goerli");
+        vm.createSelectFork("https://eth-goerli.g.alchemy.com/v2/qIhUbBSJG9G78ZP1lMbz3PLlz6OaH9L4", 9037645);
     }
 
     function testSimpleAttachment(address[] memory addresses) public {
-        vm.assume(addresses.length > 1 && addresses.length < 15);
+        vm.assume(addresses.length > 2 && addresses.length < 15);
         //address[] storage addresses = [0x3c337dE4847adB31b57559c14eDfF1E0Ee59F988, 0x000000000000000000000000000000000000000000000000000000000000122b, 0x0000000000000000000000000000000000000000000000000000000000000add, 0x0000000000000000000000000000000000000000000000000000000000000ded];
         address _safe = 0xe23B2067877E013434bE22BE0357B176bcC00174;
         bytes16 _appId = 0x233d8ed9e8c2c89ccc3bccdece915115;
         bytes16 _groupId = 0x3497b46c5dcd30bf8ee001fe3fdd0acd;
 
-        SecretAngelModule angelModule = new SecretAngelModule(_appId, _groupId, addresses.length, newOwner, _safe);
+        SecretAngelModule angelModule = new SecretAngelModule(_appId, _groupId, addresses.length, 0, _safe);
         vm.startPrank(_safe);
         GnosisSafe safe = GnosisSafe(_safe);
 
@@ -35,14 +35,20 @@ contract zkConnectDummyModuleTest is Test {
         
         for(uint256 user_id; user_id<addresses.length; ++user_id){
             vm.startPrank(addresses[user_id]);
-            angelModule.supportRecovery(abi.encodePacked(user_id+1));
+            angelModule.supportRecovery(abi.encodePacked(user_id+1), newOwner);
             vm.stopPrank();
         }
 
         vm.startPrank(newOwner);
-        angelModule.executeRecovery();
+        angelModule.executeRecovery(newOwner);
         vm.stopPrank();
 
         assertTrue(safe.isOwner(newOwner));
+    }
+
+    function testproofs() public {
+        address _safe = 0xe23B2067877E013434bE22BE0357B176bcC00174;
+        bytes16 _appId = 0x233d8ed9e8c2c89ccc3bccdece915115;
+        bytes16 _groupId = 0x3497b46c5dcd30bf8ee001fe3fdd0acd;
     }
 }

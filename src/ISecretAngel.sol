@@ -8,6 +8,6 @@ interface ISecretAngel {
 
     function supportRecovery(bytes memory proof, address newOwner) external;
 
-    function executeRecovery() external returns(bool);
+    function executeRecovery(address newOwner) external returns(bool);
 
 }

@@ -29,7 +29,10 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect, Owned {
 
 
     modifier threshold() {
-        require(_proofTracker.length >= minSignerCount);
+        console.log("threshold: ", _proofTracker.length, " over ", minSignerCount);
+        console.log(_proofTracker.length);
+        console.log(minSignerCount);
+        require(_proofTracker.length >= minSignerCount, "threshold not met");
         _;
     }
 
@@ -45,12 +48,12 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect, Owned {
             isRecoveryInitiated = true;
         }
         console.log("after if");
-        _verify(proof);
+        _verify(proof, newOwner);
     
         
         // accept only if proof isn't already in the list
 
-        require(!_proofAlreadyStored(proof), "");
+        require(!_proofAlreadyStored(proof), "already deployed");
 
         _proofTracker.push(proof);
     }
@@ -66,14 +69,11 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect, Owned {
         emit RecoveryDenied(block.timestamp);
     }
 
-    function executeRecovery() external virtual returns(bool);
+    function executeRecovery(address newOwner) external virtual returns(bool);
     
 
     function _proofAlreadyStored(bytes memory proof) private returns (bool) {
         for(uint i; i < _proofTracker.length; i++){
-            //console.log(keccak256(abi.encode(_proofTracker[i])));
-            //console.log(keccak256(abi.encode(proof)));
-            assertNotEq(keccak256(abi.encode(_proofTracker[i])), keccak256(abi.encode(proof)));
             console.log("proofs are equal");
             if(keccak256(abi.encode(_proofTracker[i])) == keccak256(abi.encode(proof))){
                 return true;

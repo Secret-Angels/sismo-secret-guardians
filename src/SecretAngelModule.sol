@@ -19,9 +19,9 @@ contract SecretAngelModule is SecretAngel {
         minLockTime = _minLockTime;
     }
 
-    function executeRecovery() external override threshold returns(bool){
-        require(block.timestamp - firstSigTimeStamp >= minLockTime);
-        require(msg.sender == newOwner, "not allowed");
+    function executeRecovery(address newOwner) external override threshold returns(bool){
+        require(block.timestamp - firstSigTimeStamp >= minLockTime, "timestamp 2");
+        require(msg.sender == newOwner, "not newOwner");
         //GnosisSafe(safe).addOwnerWithThreshold(newOwner, 1);
         bytes memory data = abi.encodeWithSignature("addOwnerWithThreshold(address,uint256)", newOwner, 1);
         require(safe.execTransactionFromModule(address(safe), 0, data, Enum.Operation.Call), "Module transaction failed");
