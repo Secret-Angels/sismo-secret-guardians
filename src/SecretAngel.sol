@@ -57,11 +57,11 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect, Owned {
 
 
 
-    modifier threshold() {
+    modifier threshold(address newOwner) {
         console.log("threshold: ", _proofTracker.length, " over ", minSignerCount);
         console.log(_proofTracker.length);
         console.log(minSignerCount);
-        require(_proofTracker.length >= minSignerCount, "threshold not met");
+        require(newOwnerVote[newOwner] >= minSignerCount, "threshold not met");
         _;
     }
 
@@ -116,11 +116,16 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect, Owned {
     /// TODO : terminate mapping and array
 
 
-    function denyRecovery() external onlyOwner {
+    function _denyRecovery() internal {
+    
         for (uint256 i; i < _proofTracker.length; i++) {
             _proofTracker.pop();
         }
-        for()
+        for(uint256 i; i < potentialNewOwner.length; i++){
+            address _deletedOwner = potentialNewOwner[potentialNewOwner.length-1];
+            newOwnerVote[_deletedOwner] = 0;
+            potentialNewOwner.pop();
+        }
 
         isRecoveryInitiated = false;
         epoch += 1;
@@ -129,7 +134,7 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect, Owned {
 
     /// @notice execute the recovery of the safe
 
-    function executeRecovery() external virtual;
+    function executeRecovery(address newOwner) external virtual returns(bool);
 
     /// @notice verifies if the proof is already stored
     

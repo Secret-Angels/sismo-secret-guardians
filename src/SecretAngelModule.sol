@@ -22,7 +22,7 @@ contract SecretAngelModule is SecretAngel {
         minLockTime = _minLockTime;
     }
 
-    function executeRecovery(address newOwner) external override threshold returns(bool){
+    function executeRecovery(address newOwner) external override threshold(newOwner) returns(bool){
         require(block.timestamp - firstSigTimeStamp >= minLockTime, "timestamp 2");
         require(msg.sender == newOwner, "not newOwner");
         //GnosisSafe(safe).addOwnerWithThreshold(newOwner, 1);
@@ -30,12 +30,16 @@ contract SecretAngelModule is SecretAngel {
         require(safe.execTransactionFromModule(address(safe), 0, data, Enum.Operation.Call), "Module transaction failed");
 
         return true;
-
     }
 
     function denyChallenge() external override {
         require(msg.sender == address(safe), "not Safe");
-        freezeRecoveryDuration = 0;
+        inactivityTimestamp = 0;
+    }
+
+    function denyRecovery() public {
+        require(msg.sender == address(safe), "not Safe");
+        _denyRecovery();
     }
 
 }
