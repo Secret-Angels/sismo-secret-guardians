@@ -28,12 +28,11 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect, Owned {
     event RecoveryDenied(uint256 timestamp);
     event ProofVerifiedAndAdded(uint256 timestamp, bytes proof);
 
-    constructor(bool _isWalletInactive, bytes16 _appId, bytes16 _groupId, uint256 _minSignerCount, uint256 _freezeRecoveryDuration, uint256 _maxDuration) SismoConnect(_appId) Owned(msg.sender) {
+    constructor(bytes16 _appId, bytes16 _groupId, uint256 _minSignerCount, uint256 _freezeRecoveryDuration, uint256 _maxDuration) SismoConnect(_appId) {
         groupId = _groupId;
         minSignerCount = _minSignerCount;
         freezeRecoveryDuration = _freezeRecoveryDuration;
         maxDuration = _maxDuration;
-        _isWalletInactive = false;
     }
 
 
@@ -51,7 +50,7 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect, Owned {
         inactivityTimestamp = block.timestamp;
     }
 
-    function denyChallenge() external virtual onlyOwner;
+    function denyChallenge() external virtual;
 
     function supportRecovery(bytes memory proof, address newOwner) external {
 

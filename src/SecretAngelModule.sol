@@ -14,9 +14,10 @@ contract SecretAngelModule is SecretAngel {
         bytes16 _groupId,
         address _safe,
         uint256 _minSignerCount,
-        uint256 _minLockTime
-        
-    ) SecretAngel(_appId, _groupId, _minSignerCount) Owned(safe){
+        uint256 _minLockTime,
+        uint256 _freezeRecoveryDuration,
+        uint256 _maxDuration
+    ) SecretAngel(_appId, _groupId, _minSignerCount, _freezeRecoveryDuration, _maxDuration) Owned(_safe){
         safe = GnosisSafe(_safe);
         minLockTime = _minLockTime;
     }
@@ -32,8 +33,10 @@ contract SecretAngelModule is SecretAngel {
 
     }
 
-    function denyChallenge() external override onlyOwner {
+    function denyChallenge() external override {
+        require(msg.sender == address(safe), "not Safe");
         isWalletInactive = false;
+        freezeRecoveryDuration = 0;
     }
 
 }
