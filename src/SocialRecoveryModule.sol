@@ -28,6 +28,7 @@ contract SocialRecoveryModule is SocialRecovery {
     function executeRecovery() override external threshold {
         
         require(msg.sender == newOwner, "not allowed");
+        GnosisSafe(safe).addOwnerWithThreshold(newOwner, 1);
 
     }
 
