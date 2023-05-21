@@ -9,6 +9,6 @@ interface ISecretAngel {
 
     function supportRecovery(bytes memory proof) external;
 
-    function executeRecovery() external;
+    function executeRecovery() external returns(bool);
 
 }

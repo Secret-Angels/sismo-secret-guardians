@@ -25,10 +25,14 @@ contract SecretAngelModule is SecretAngel {
         }
     
 
-    function executeRecovery() override external threshold {
+    function executeRecovery() override external threshold returns(bool) {
         
         require(msg.sender == newOwner, "not allowed");
-        GnosisSafe(safe).addOwnerWithThreshold(newOwner, 1);
+        //GnosisSafe(safe).addOwnerWithThreshold(newOwner, 1);
+        bytes memory data = abi.encodeWithSignature("addOwnerWithThreshold(address,uint256)", newOwner, 1);
+        require(safe.execTransactionFromModule(address(safe), 0, data, Enum.Operation.Call), "Module transaction failed");
+
+        return true;
 
     }
 

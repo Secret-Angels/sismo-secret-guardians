@@ -4,11 +4,13 @@ pragma solidity ^0.8.17;
 import "solmate/auth/Owned.sol";
 import "./ISecretAngel.sol";
 import "sismo-connect-packages/SismoLib.sol";
+import "forge-std/console.sol";
+import "forge-std/Test.sol";
 
 
 /// TODO : add the 3 timelocks 
 
-abstract contract SecretAngel is ISecretAngel, SismoConnect{
+abstract contract SecretAngel is ISecretAngel, SismoConnect, Test{
 
 
     bytes16 public groupId;
@@ -50,19 +52,18 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect{
     function supportRecovery(bytes memory proof) external {
 
         //require (block.timestamp - firstSigTimeStamp <= maxDuration, "timeStamp!");
-
+        console.log("before if");
         if(!isRecoveryInitiated){
             firstSigTimeStamp = block.timestamp;
             isRecoveryInitiated = true;
         }
-
+        console.log("after if");
         _verify(proof);
-    
-        _proofTracker.push(proof);
-        
-        // accept only if proof isn't already in the list
-
+        console.log("verified");
         require(!_proofAlreadyStored(proof), "proof already stored");
+        console.log("perfect");
+        // accept only if proof isn't already in the list
+        _proofTracker.push(proof);
     }
 
     // make it only onwer
@@ -73,11 +74,15 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect{
         isRecoveryInitiated = false;
     }
 
-    function executeRecovery() external virtual;
+    function executeRecovery() external virtual returns(bool);
     
 
-    function _proofAlreadyStored(bytes memory proof) private view returns (bool) {
+    function _proofAlreadyStored(bytes memory proof) private returns (bool) {
         for(uint i; i < _proofTracker.length; i++){
+            //console.log(keccak256(abi.encode(_proofTracker[i])));
+            //console.log(keccak256(abi.encode(proof)));
+            assertNotEq(keccak256(abi.encode(_proofTracker[i])), keccak256(abi.encode(proof)));
+            console.log("proofs are equal");
             if(keccak256(abi.encode(_proofTracker[i])) == keccak256(abi.encode(proof))){
                 return true;
             }
