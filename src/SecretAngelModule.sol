@@ -35,7 +35,6 @@ contract SecretAngelModule is SecretAngel {
 
     function denyChallenge() external override {
         require(msg.sender == address(safe), "not Safe");
-        isWalletInactive = false;
         freezeRecoveryDuration = 0;
     }
 
