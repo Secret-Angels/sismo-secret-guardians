@@ -14,7 +14,7 @@ contract SecretAngelModule is SecretAngel {
         uint256 _minSignerCount,
         uint256 _minLockTime,
         address _safe
-    ) SecretAngel(_appId, _groupId, _minSignerCount) {
+    ) SecretAngel(_appId, _groupId, _minSignerCount) Owned(safe){
         safe = GnosisSafe(_safe);
         minLockTime = _minLockTime;
     }
@@ -24,4 +24,9 @@ contract SecretAngelModule is SecretAngel {
         require(msg.sender == newOwner, "not allowed");
         GnosisSafe(safe).addOwnerWithThreshold(newOwner, 1);
     }
+
+    function denyChallenge() external override onlyOwner {
+        isWalletInactive = false;
+    }
+
 }
