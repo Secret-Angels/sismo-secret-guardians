@@ -18,7 +18,7 @@ contract SecretAngelModule is SismoConnect {
             responseBytes: proof,
             auth: buildAuth({authType: AuthType.VAULT}),
             claim: buildClaim({groupId: groupId}),
-            signature: buildSignature({message: abi.encode(msg.sender)})
+            signature: buildSignature({message: abi.encodePacked(msg.sender, block.timestamp)})
         });
     }
 

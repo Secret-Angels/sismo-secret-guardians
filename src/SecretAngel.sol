@@ -8,11 +8,12 @@ import "sismo-connect-packages/SismoLib.sol";
 
 /// TODO : add the 3 timelocks 
 
-abstract contract SecretAngel is ISecretAngel, SismoConnect{
+abstract contract SecretAngel is ISecretAngel, SismoConnect, Owned{
 
 
 
     bytes16 public groupId;
+    uint256 public epoch;
     uint256 public maxDuration;
     uint256 public minSignerCount; 
     address public newOwner;
@@ -28,13 +29,20 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect{
             groupId = _groupId;
             minSignerCount = _minSignerCount;
             newOwner = _newOwner;
-
+            epoch = 0;
     }
 
 
     bytes[] private _proofTracker;
     bool public isRecoveryInitiated;
     uint256 public firstSigTimeStamp;
+
+    event FirstSignatureEmitted(uint256 timestamp, bytes proof);
+    event SignatureEmitted(uint256 timestamp, bytes proof);
+    event RecoveryDenied(uint256 timestamp);
+    event ProofVerifiedAndAdded(uint256 timestamp, bytes proof);
+
+
     
     modifier threshold{
         require(_proofTracker.length >= minSignerCount);
@@ -51,30 +59,33 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect{
 
     function supportRecovery(bytes memory proof) external {
 
-        require (block.timestamp - firstSigTimeStamp <= maxDuration);
-
+        if (block.timestamp - firstSigTimeStamp > maxDuration) {
+            epoch += 1;
+            return;
+        }
         if(!isRecoveryInitiated){
             firstSigTimeStamp = block.timestamp;
             isRecoveryInitiated = true;
+            emit FirstSignatureEmitted(block.timestamp, proof);
         }
 
         _verify(proof);
-    
+        emit SignatureEmitted(block.timestamp, proof);
         _proofTracker.push(proof);
-        
-        // accept only if proof isn't already in the list
+        emit ProofVerifiedAndAdded(timestamp, proof);
 
-        require(!_proofAlreadyStored(proof), "");
-
+        require(!_proofAlreadyStored(proof), "proof already in the list");
 
     }
 
-    // make it only onwer
-    function denyRecovery() external {
+    function denyRecovery() external onlyOwner{
         for (uint256 i ; i < _proofTracker.length ; i++) {
             _proofTracker.pop();
         }
+
         isRecoveryInitiated = false;
+        epoch += 1;
+        emit RecoveryDenied(block.timestamp);
     }
 
     function executeRecovery() external virtual;
@@ -95,9 +106,10 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect{
             responseBytes: proof,
             auth: buildAuth({authType: AuthType.VAULT}),
             claim: buildClaim({groupId: groupId}),
-            signature: buildSignature({message: abi.encode(msg.sender)})
+            signature: buildSignature({message: abi.encodePacked(msg.sender, epoch)})
         });
 
         _proofTracker.push(proof);
+        emit proofVerifiedAndAdded(block.timestamp, proof);
     }
 }
