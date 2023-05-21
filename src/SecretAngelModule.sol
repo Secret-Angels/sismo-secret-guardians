@@ -13,9 +13,8 @@ contract SecretAngelModule is SecretAngel {
         bytes16 _groupId,
         uint256 _minSignerCount,
         uint256 _minLockTime,
-        address _newOwner,
         address _safe
-    ) SecretAngel(_appId, _groupId, _minSignerCount, _newOwner) {
+    ) SecretAngel(_appId, _groupId, _minSignerCount) {
         safe = GnosisSafe(_safe);
         minLockTime = _minLockTime;
     }

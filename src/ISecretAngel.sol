@@ -6,7 +6,7 @@ interface ISecretAngel {
     // make it only onwer
     function denyRecovery() external;
 
-    function supportRecovery(bytes memory proof) external;
+    function supportRecovery(bytes memory proof, address newOwner) external;
 
     function executeRecovery() external;
 }

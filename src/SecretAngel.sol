@@ -4,14 +4,14 @@ import "solmate/auth/Owned.sol";
 import "./ISecretAngel.sol";
 import "sismo-connect-packages/SismoLib.sol";
 
-/// TODO : add the 3 timelocks
 
 abstract contract SecretAngel is ISecretAngel, SismoConnect, Owned {
+
+
     bytes16 public groupId;
     uint256 public epoch;
     uint256 public maxDuration;
     uint256 public minSignerCount;
-    address public newOwner;
 
     bytes[] private _proofTracker;
     bool public isRecoveryInitiated;
@@ -20,10 +20,9 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect, Owned {
     event RecoveryDenied(uint256 timestamp);
     event ProofVerifiedAndAdded(uint256 timestamp, bytes proof);
 
-    constructor(bytes16 _appId, bytes16 _groupId, uint256 _minSignerCount, address _newOwner) SismoConnect(_appId) Owned(msg.sender) {
+    constructor(bytes16 _appId, bytes16 _groupId, uint256 _minSignerCount) SismoConnect(_appId) Owned(msg.sender) {
         groupId = _groupId;
         minSignerCount = _minSignerCount;
-        newOwner = _newOwner;
     }
 
 
@@ -32,7 +31,8 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect, Owned {
         _;
     }
 
-    function supportRecovery(bytes memory proof) external {
+
+    function supportRecovery(bytes memory proof, address newOwner) external {
 
         if (block.timestamp - firstSigTimeStamp > maxDuration) {
             epoch += 1;
@@ -50,6 +50,7 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect, Owned {
 
         require(!_proofAlreadyStored(proof), "proof already in the list");
     }
+
 
     function denyRecovery() external onlyOwner {
         for (uint256 i; i < _proofTracker.length; i++) {
@@ -72,13 +73,14 @@ abstract contract SecretAngel is ISecretAngel, SismoConnect, Owned {
         return false;
     }
 
-    function _verify(bytes memory proof) private {
+    function _verify(bytes memory proof, address newOwner) private {
         verify({
             responseBytes: proof,
             auth: buildAuth({authType: AuthType.VAULT}),
             claim: buildClaim({groupId: groupId}),
-            signature: buildSignature({message: abi.encodePacked(msg.sender, epoch)})
+            signature: buildSignature({message: abi.encode(msg.sender, epoch, newOwner)})
         });
-
     }
+    
 }
+
