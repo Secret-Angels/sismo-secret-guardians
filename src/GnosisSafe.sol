@@ -26,5 +26,4 @@ interface GnosisSafe {
     /// @param owner New owner address.
     /// @param _threshold New threshold.
     function addOwnerWithThreshold(address owner, uint256 _threshold) external;
-
 }
