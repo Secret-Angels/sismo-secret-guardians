@@ -1,30 +1,41 @@
 
-
 pragma solidity ^0.8.17;
 
 import "solmate/auth/Owned.sol";
-import "./ISocialRecovery.sol";
+import "./ISecretAngel.sol";
 import "sismo-connect-packages/SismoLib.sol";
 
 
 /// TODO : add the 3 timelocks 
 
-abstract contract SocialRecovery is ISocialRecovery, SismoConnect{
+abstract contract SecretAngel is ISecretAngel, SismoConnect{
 
-    uint256 public MINIMUM_SIGNER_COUNT;//TODO: constructor
 
     bytes16 public groupId;
+    uint256 public maxDuration;
+    uint256 public minSignerCount;//TODO: constructor
+    address public newOwner;
 
-    constructor(bytes16 _appId, bytes16 _groupId) SismoConnect(_appId) {
-        groupId = _groupId;
+
+    constructor(
+        bytes16 _appId,
+        bytes16 _groupId,
+        uint256 _minSignerCount ,
+        address _newOwner) SismoConnect(_appId) {
+
+            groupId = _groupId;
+            minSignerCount = _minSignerCount;
+            newOwner = _newOwner;
+
     }
+
 
     bytes[] private _proofTracker;
     bool public isRecoveryInitiated;
     uint256 public firstSigTimeStamp;
     
-    modifier threshHold{
-        require(_proofTracker.length >= MINIMUM_SIGNER_COUNT);
+    modifier threshold{
+        require(_proofTracker.length >= minSignerCount);
         _;
     }
 
@@ -36,7 +47,9 @@ abstract contract SocialRecovery is ISocialRecovery, SismoConnect{
         groupId = _groupId;
     }
 
-    function initiateRecovery(bytes memory proof) external {
+    function supportRecovery(bytes memory proof) external {
+
+        require (block.timestamp - firstSigTimeStamp <= maxDuration);
 
         if(!isRecoveryInitiated){
             firstSigTimeStamp = block.timestamp;
@@ -48,31 +61,22 @@ abstract contract SocialRecovery is ISocialRecovery, SismoConnect{
         _proofTracker.push(proof);
         
         // accept only if proof isn't already in the list
+
         require(!_proofAlreadyStored(proof), "");
 
-        // require(block.timestamp - firstSigTimeStamp < 2 weeks);
 
     }
 
     // make it only onwer
-    function denyRecover() external {
+    function denyRecovery() external {
         for (uint256 i ; i < _proofTracker.length ; i++) {
             _proofTracker.pop();
         }
         isRecoveryInitiated = false;
     }
 
-    function supportRecover(bytes memory proof) external{
-
-        require(isRecoveryInitiated, "not initiated");
-        // require(block.timestamp - firstSigTimeStamp < 2 weeks);
-        
-        // accept only if proof isn't already in the list
-        require(!_proofAlreadyStored(proof), "proof already used");
-        _verify(proof);
-
-        _proofTracker.push(proof);
-    }
+    function executeRecovery() external virtual;
+    
 
     function _proofAlreadyStored(bytes memory proof) private view returns (bool) {
         for(uint i; i < _proofTracker.length; i++){
@@ -83,6 +87,7 @@ abstract contract SocialRecovery is ISocialRecovery, SismoConnect{
         return false;
     }
     
+
     function _verify(bytes memory proof) private {
         verify ({ 
             responseBytes: proof,
@@ -91,11 +96,7 @@ abstract contract SocialRecovery is ISocialRecovery, SismoConnect{
             signature: buildSignature({message: abi.encode(msg.sender)})
         });
 
-        
-
         _proofTracker.push(proof);
-
-
 
     }
 }
